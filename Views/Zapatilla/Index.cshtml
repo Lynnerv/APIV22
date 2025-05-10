@@ -1,0 +1,76 @@
+@model APIV22.Models.ZapatillaPersonalizada
+
+@{
+    ViewData["Title"] = "Personalizar Zapatilla";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Index" enctype="multipart/form-data" method="post">
+    <div class="form-group">
+        <label>Sube tu logo o diseño</label>
+        <input type="file" name="Imagen" class="form-control" accept="image/*" />
+    </div>
+
+    <div class="form-group">
+        <label>Colores:</label>
+        <div>
+            <label>Parte superior:</label>
+            <input asp-for="ColorSuperior" class="form-control" type="color" />
+        </div>
+        <div>
+            <label>Suela:</label>
+            <input asp-for="ColorSuela" class="form-control" type="color" />
+        </div>
+        <div>
+            <label>Cordones:</label>
+            <input asp-for="ColorCordones" class="form-control" type="color" />
+        </div>
+        <div>
+            <label>Plantilla:</label>
+            <input asp-for="ColorPlantilla" class="form-control" type="color" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Estilo:</label>
+        <select asp-for="Estilo" class="form-control">
+            <option>Alta</option>
+            <option>Baja</option>
+            <option>Deportiva</option>
+            <option>Casual</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Suela:</label>
+        <select asp-for="Suela" class="form-control">
+            <option>Goma</option>
+            <option>Antideslizante</option>
+            <option>Deportiva</option>
+            <option>Plataforma</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Texto personalizado:</label>
+        <input asp-for="Texto" class="form-control" maxlength="20" />
+    </div>
+
+    <div class="form-group">
+        <label>Talla:</label>
+        <select asp-for="Talla" class="form-control">
+            @for (int i = 35; i <= 45; i++)
+            {
+                <option value="@i">@i</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Vista previa:</label><br />
+        <img src="/images/zapatilla_base.png" id="vistaPrevia" style="width: 300px;" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Agregar al carrito</button>
+</form>
