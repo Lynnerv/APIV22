@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using APIV22.Data;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using APIV22.Models;
+using APIV22.Service; // ✅ Nuevo: usamos el servicio en lugar del DbContext
 
 namespace APIV22.Controllers.Rest
 {
@@ -9,25 +10,28 @@ namespace APIV22.Controllers.Rest
     [Route("api/Zapatilla")]
     public class ZapatillaApiController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ZapatillaService _service; // ✅ Nuevo: ahora usamos el servicio en lugar del contexto directo
 
-        public ZapatillaApiController(ApplicationDbContext context)
+        // ✅ Nuevo: inyectamos ZapatillaService en lugar de ApplicationDbContext
+        public ZapatillaApiController(ZapatillaService service)
         {
-            _context = context;
+            _service = service;
         }
 
         // GET: api/ZapatillaApi
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ZapatillaPersonalizada>>> GetAll()
         {
-            return await _context.ZapatillasPersonalizadas.ToListAsync();
+            // ✅ Usamos el servicio para obtener todas las zapatillas
+            return await _service.GetAllAsync();
         }
 
         // GET: api/ZapatillaApi/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ZapatillaPersonalizada>> GetById(int id)
         {
-            var zapatilla = await _context.ZapatillasPersonalizadas.FindAsync(id);
+            // ✅ Usamos el servicio para obtener por ID
+            var zapatilla = await _service.GetByIdAsync(id);
             if (zapatilla == null)
                 return NotFound();
 
@@ -38,10 +42,9 @@ namespace APIV22.Controllers.Rest
         [HttpPost]
         public async Task<ActionResult<ZapatillaPersonalizada>> Create(ZapatillaPersonalizada model)
         {
-            _context.ZapatillasPersonalizadas.Add(model);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
+            // ✅ Usamos el servicio para crear una nueva zapatilla
+            var creada = await _service.CreateAsync(model);
+            return CreatedAtAction(nameof(GetById), new { id = creada.Id }, creada);
         }
 
         // PUT: api/ZapatillaApi/5
@@ -51,19 +54,10 @@ namespace APIV22.Controllers.Rest
             if (id != model.Id)
                 return BadRequest();
 
-            _context.Entry(model).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.ZapatillasPersonalizadas.Any(e => e.Id == id))
-                    return NotFound();
-
-                throw;
-            }
+            // ✅ Usamos el servicio para actualizar
+            var updated = await _service.UpdateAsync(id, model);
+            if (!updated)
+                return NotFound();
 
             return NoContent();
         }
@@ -72,12 +66,10 @@ namespace APIV22.Controllers.Rest
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var zapatilla = await _context.ZapatillasPersonalizadas.FindAsync(id);
-            if (zapatilla == null)
+            // ✅ Usamos el servicio para eliminar
+            var deleted = await _service.DeleteAsync(id);
+            if (!deleted)
                 return NotFound();
-
-            _context.ZapatillasPersonalizadas.Remove(zapatilla);
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }

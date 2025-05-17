@@ -1,24 +1,22 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
-using APIV22.Models;
-using APIV22.Data; // Asegúrate de tener esto
 using System.IO;
 using System.Threading.Tasks;
-
+using APIV22.Models;
+using APIV22.Service; // ✅ Agregas esta línea para usar el servicio
+    
 namespace APIV22.Controllers
 {
     public class ZapatillaController : Controller
     {
-        private readonly ILogger<ZapatillaController> _logger;
         private readonly IWebHostEnvironment _env;
-        private readonly ApplicationDbContext _context;
+        private readonly ZapatillaService _service; // ✅ Agregas esta línea para acceder al service
 
-        public ZapatillaController(ILogger<ZapatillaController> logger, IWebHostEnvironment env, ApplicationDbContext context)
+        // ✅ Inyectas el servicio por constructor
+        public ZapatillaController(IWebHostEnvironment env, ZapatillaService service)
         {
-            _logger = logger;
             _env = env;
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
@@ -36,10 +34,9 @@ namespace APIV22.Controllers
             if (Imagen != null && Imagen.Length > 0)
             {
                 var uploads = Path.Combine(_env.WebRootPath, "uploads");
-                if (!Directory.Exists(uploads))
-                    Directory.CreateDirectory(uploads);
+                if (!Directory.Exists(uploads)) Directory.CreateDirectory(uploads);
 
-                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(Imagen.FileName);
+                var fileName = Guid.NewGuid() + Path.GetExtension(Imagen.FileName);
                 var path = Path.Combine(uploads, fileName);
 
                 using var stream = new FileStream(path, FileMode.Create);
@@ -48,23 +45,10 @@ namespace APIV22.Controllers
                 modelo.NombreImagen = fileName;
             }
 
-            try
-            {
-                _context.ZapatillasPersonalizadas.Add(modelo);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al guardar en la base de datos");
-                return Content($"ERROR al guardar: {ex.Message}");
-            }
+            // ✅ Guardas la zapatilla usando el servicio
+            await _service.CreateAsync(modelo);
 
             return RedirectToAction("Index");
-        }
-
-        public IActionResult Error()
-        {
-            return View();
         }
     }
 }
