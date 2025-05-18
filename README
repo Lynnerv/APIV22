@@ -1,2 +1,7 @@
 AGREGAR -->
 dotnet add package Swashbuckle.AspNetCore --version 8.1.1
+
+
+agregar -->
+npm init -y
+npm install express axios
