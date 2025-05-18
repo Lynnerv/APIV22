@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using APIV22.Data;
 using APIV22.Service; // ✅ NUEVO: agregas esta línea para registrar el servicio
+using APIV22.Integration.galletafortuna; // Servicio para consumir API de galleta de la fortuna
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // ✅ Registrar ZapatillaService como servicio inyectable (para API y MVC)
 builder.Services.AddScoped<ZapatillaService>();
+builder.Services.AddHttpClient<GalletaApiIntegration>(); // HttpClient para consumir API externa de RapidAPI
 
 // Habilita controladores con vistas Razor
 builder.Services.AddControllersWithViews();
